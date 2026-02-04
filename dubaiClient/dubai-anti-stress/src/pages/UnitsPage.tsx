@@ -116,6 +116,13 @@ export default function UnitsPage() {
   const [developer, setDeveloper] = useState<string>('all')
   const [minPrice, setMinPrice] = useState<string>('')
   const [maxPrice, setMaxPrice] = useState<string>('')
+  const [propertyType, setPropertyType] = useState<string>('all')
+  const [minArea, setMinArea] = useState<string>('')
+  const [maxArea, setMaxArea] = useState<string>('')
+  const [minRooms, setMinRooms] = useState<string>('')
+  const [maxRooms, setMaxRooms] = useState<string>('')
+  const [ownershipType, setOwnershipType] = useState<string>('all')
+  const [project, setProject] = useState<string>('all')
 
   const areas = useMemo(() => {
     const unique = Array.from(new Set(MOCK_UNITS.map(u => u.area_name_en).filter(Boolean)))
@@ -129,13 +136,31 @@ export default function UnitsPage() {
     return unique
   }, [])
 
+  const propertyTypes = useMemo(() => {
+    const unique = Array.from(new Set(MOCK_UNITS.map(u => u.property_type_en).filter(Boolean))) as string[]
+    unique.sort((a, b) => a.localeCompare(b))
+    return unique
+  }, [])
+
+  const projects = useMemo(() => {
+    const unique = Array.from(new Set(MOCK_UNITS.map(u => u.project_name_en).filter(Boolean))) as string[]
+    unique.sort((a, b) => a.localeCompare(b))
+    return unique
+  }, [])
+
   const filteredUnits = useMemo(() => {
     const min = minPrice.trim() ? Number(minPrice) : null
     const max = maxPrice.trim() ? Number(maxPrice) : null
+    const minAreaVal = minArea.trim() ? Number(minArea) : null
+    const maxAreaVal = maxArea.trim() ? Number(maxArea) : null
+    const minRoomsVal = minRooms.trim() ? Number(minRooms) : null
+    const maxRoomsVal = maxRooms.trim() ? Number(maxRooms) : null
 
     return MOCK_UNITS.filter((u) => {
       if (area !== 'all' && u.area_name_en !== area) return false
       if (developer !== 'all' && u.developer_name !== developer) return false
+      if (propertyType !== 'all' && u.property_type_en !== propertyType) return false
+      if (project !== 'all' && u.project_name_en !== project) return false
 
       const price = u.price_aed ?? null
       if (min != null && !Number.isNaN(min)) {
@@ -145,9 +170,30 @@ export default function UnitsPage() {
         if (price == null || price > max) return false
       }
 
+      const areaVal = u.actual_area ?? null
+      if (minAreaVal != null && !Number.isNaN(minAreaVal)) {
+        if (areaVal == null || areaVal < minAreaVal) return false
+      }
+      if (maxAreaVal != null && !Number.isNaN(maxAreaVal)) {
+        if (areaVal == null || areaVal > maxAreaVal) return false
+      }
+
+      const roomsVal = u.rooms ?? null
+      if (minRoomsVal != null && !Number.isNaN(minRoomsVal)) {
+        if (roomsVal == null || roomsVal < minRoomsVal) return false
+      }
+      if (maxRoomsVal != null && !Number.isNaN(maxRoomsVal)) {
+        if (roomsVal == null || roomsVal > maxRoomsVal) return false
+      }
+
+      if (ownershipType !== 'all') {
+        if (ownershipType === 'freehold' && !u.is_free_hold) return false
+        if (ownershipType === 'leasehold' && !u.is_lease_hold) return false
+      }
+
       return true
     })
-  }, [area, developer, minPrice, maxPrice])
+  }, [area, developer, minPrice, maxPrice, propertyType, minArea, maxArea, minRooms, maxRooms, ownershipType, project])
 
   const selectedUnit = useMemo(() => {
     if (selectedUnitId == null) return null
@@ -159,6 +205,13 @@ export default function UnitsPage() {
     setDeveloper('all')
     setMinPrice('')
     setMaxPrice('')
+    setPropertyType('all')
+    setMinArea('')
+    setMaxArea('')
+    setMinRooms('')
+    setMaxRooms('')
+    setOwnershipType('all')
+    setProject('all')
   }
 
   return (
@@ -175,7 +228,7 @@ export default function UnitsPage() {
         </div>
 
         <div className="card p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-bayut-dark mb-2">Area</label>
               <select className="form-control" value={area} onChange={(e) => setArea(e.target.value)}>
@@ -192,6 +245,26 @@ export default function UnitsPage() {
                 <option value="all">All developers</option>
                 {developers.map(d => (
                   <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-bayut-dark mb-2">Property Type</label>
+              <select className="form-control" value={propertyType} onChange={(e) => setPropertyType(e.target.value)}>
+                <option value="all">All types</option>
+                {propertyTypes.map(pt => (
+                  <option key={pt} value={pt}>{pt}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-bayut-dark mb-2">Project</label>
+              <select className="form-control" value={project} onChange={(e) => setProject(e.target.value)}>
+                <option value="all">All projects</option>
+                {projects.map(p => (
+                  <option key={p} value={p}>{p}</option>
                 ))}
               </select>
             </div>
@@ -216,6 +289,59 @@ export default function UnitsPage() {
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-bayut-dark mb-2">Min area (sqm)</label>
+              <input
+                className="form-control"
+                inputMode="numeric"
+                placeholder="e.g. 50"
+                value={minArea}
+                onChange={(e) => setMinArea(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-bayut-dark mb-2">Max area (sqm)</label>
+              <input
+                className="form-control"
+                inputMode="numeric"
+                placeholder="e.g. 500"
+                value={maxArea}
+                onChange={(e) => setMaxArea(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-bayut-dark mb-2">Min rooms</label>
+              <input
+                className="form-control"
+                inputMode="numeric"
+                placeholder="e.g. 1"
+                value={minRooms}
+                onChange={(e) => setMinRooms(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-bayut-dark mb-2">Max rooms</label>
+              <input
+                className="form-control"
+                inputMode="numeric"
+                placeholder="e.g. 5"
+                value={maxRooms}
+                onChange={(e) => setMaxRooms(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-bayut-dark mb-2">Ownership</label>
+              <select className="form-control" value={ownershipType} onChange={(e) => setOwnershipType(e.target.value)}>
+                <option value="all">All types</option>
+                <option value="freehold">Freehold</option>
+                <option value="leasehold">Leasehold</option>
+              </select>
             </div>
           </div>
 
@@ -280,6 +406,22 @@ export default function UnitsPage() {
                       <div className="text-xs text-bayut-gray">Floor</div>
                       <div className="font-bold text-bayut-dark">{selectedUnit.floor ?? '—'}</div>
                     </div>
+                    <div className="bg-bayut-light rounded-xl p-3">
+                      <div className="text-xs text-bayut-gray">Property Type</div>
+                      <div className="font-bold text-bayut-dark truncate">{selectedUnit.property_type_en ?? '—'}</div>
+                    </div>
+                    <div className="bg-bayut-light rounded-xl p-3">
+                      <div className="text-xs text-bayut-gray">Land Type</div>
+                      <div className="font-bold text-bayut-dark truncate">{selectedUnit.land_type_en ?? '—'}</div>
+                    </div>
+                    <div className="bg-bayut-light rounded-xl p-3">
+                      <div className="text-xs text-bayut-gray">Building</div>
+                      <div className="font-bold text-bayut-dark truncate">{selectedUnit.building_number ?? '—'}</div>
+                    </div>
+                    <div className="bg-bayut-light rounded-xl p-3">
+                      <div className="text-xs text-bayut-gray">Unit</div>
+                      <div className="font-bold text-bayut-dark">{selectedUnit.unit_number ?? '—'}</div>
+                    </div>
                   </div>
 
                   <div>
@@ -287,6 +429,7 @@ export default function UnitsPage() {
                     <div className="text-bayut-gray">
                       {selectedUnit.area_name_en}
                       {selectedUnit.project_name_en ? ` · ${selectedUnit.project_name_en}` : ''}
+                      {selectedUnit.master_project_en ? ` · ${selectedUnit.master_project_en}` : ''}
                     </div>
                   </div>
 
@@ -295,10 +438,21 @@ export default function UnitsPage() {
                     <div className="text-bayut-gray">{selectedUnit.developer_name ?? '—'}</div>
                   </div>
 
+                  <div>
+                    <div className="text-sm font-medium text-bayut-dark mb-2">Project Details</div>
+                    <div className="text-bayut-gray">
+                      <div>Project: {selectedUnit.project_name_en || '—'}</div>
+                      <div>Master Project: {selectedUnit.master_project_en || '—'}</div>
+                      <div>Project ID: {selectedUnit.project_id || '—'}</div>
+                    </div>
+                  </div>
+
                   <div className="flex flex-wrap gap-2">
                     {selectedUnit.is_free_hold ? <span className="badge badge-success">Freehold</span> : null}
                     {selectedUnit.is_lease_hold ? <span className="badge badge-warning">Leasehold</span> : null}
+                    {selectedUnit.is_registered ? <span className="badge badge-info">Registered</span> : null}
                     <span className="badge badge-primary">Area ID: {selectedUnit.area_id}</span>
+                    <span className="badge badge-secondary">Property ID: {selectedUnit.property_id}</span>
                   </div>
 
                   <button type="button" className="btn btn-primary w-full">

@@ -56,8 +56,18 @@ export function UnitCard({ unit, active, onSelect }: UnitCardProps) {
           <span className="badge badge-primary">
             {unit.area_name_en || 'Area'}
           </span>
+          {unit.property_type_en && (
+            <span className="badge badge-secondary">
+              {unit.property_type_en}
+            </span>
+          )}
           {unit.is_free_hold ? <span className="badge badge-success">Freehold</span> : null}
           {unit.is_lease_hold ? <span className="badge badge-warning">Leasehold</span> : null}
+          {unit.land_type_en && (
+            <span className="badge badge-info">
+              {unit.land_type_en}
+            </span>
+          )}
         </div>
 
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
@@ -77,7 +87,7 @@ export function UnitCard({ unit, active, onSelect }: UnitCardProps) {
       </div>
 
       <div className="p-4">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div className="text-center">
             <div className="font-bold text-bayut-dark">{getRoomsLabel(unit)}</div>
             <div className="text-xs text-bayut-gray">Rooms</div>
@@ -91,6 +101,24 @@ export function UnitCard({ unit, active, onSelect }: UnitCardProps) {
               {unit.developer_name ?? '—'}
             </div>
             <div className="text-xs text-bayut-gray">Developer</div>
+          </div>
+          <div className="text-center">
+            <div className="font-bold text-bayut-dark truncate">
+              {unit.property_type_en ?? '—'}
+            </div>
+            <div className="text-xs text-bayut-gray">Property Type</div>
+          </div>
+          <div className="text-center">
+            <div className="font-bold text-bayut-dark truncate">
+              {unit.land_type_en ?? '—'}
+            </div>
+            <div className="text-xs text-bayut-gray">Land Type</div>
+          </div>
+          <div className="text-center">
+            <div className="font-bold text-bayut-dark truncate">
+              {unit.project_name_en ?? unit.master_project_en ?? '—'}
+            </div>
+            <div className="text-xs text-bayut-gray">Project</div>
           </div>
         </div>
       </div>
